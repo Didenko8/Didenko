@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio</title>
+
+<style>
+body {
+  font-family: Helvetica, Arial, sans-serif;
+  background: white;
+  color: #555;
+  margin: 0;
+}
+
+.container {
+  width: 90%;
+  max-width: 1000px;
+  margin: auto;
+}
+
+h1 {
+  text-align: center;
+  font-weight: 300;
+}
+
+.topbar {
+  display:flex;
+  justify-content:space-between;
+  padding:20px;
+}
+
+button {
+  background:none;
+  border:1px solid #ccc;
+  padding:5px 10px;
+  cursor:pointer;
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.card img {
+  width:100%;
+}
+
+.modal {
+  display:none;
+  position:fixed;
+  top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,0.8);
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+}
+
+.modal img {
+  max-width:80%;
+}
+
+.close {color:white;font-size:30px;cursor:pointer;}
+
+.editor {
+  margin:20px 0;
+}
+
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <button onclick="setLang('uk')">UA</button>
+    <button onclick="setLang('en')">EN</button>
+  </div>
+  <button onclick="addWork()">+ Додати роботу</button>
+</div>
+
+<h1 contenteditable="true">Моє портфоліо</h1>
+
+<div class="container">
+  <div class="gallery" id="gallery"></div>
+</div>
+
+<div class="modal" id="modal">
+  <span class="close" onclick="closeModal()">×</span>
+  <div id="modalContent"></div>
+</div>
+
+<script>
+let works = JSON.parse(localStorage.getItem('works') || '[]');
+let lang = 'uk';
+
+function save() {
+  localStorage.setItem('works', JSON.stringify(works));
+}
+
+function render() {
+  const gallery = document.getElementById('gallery');
+  gallery.innerHTML = '';
+
+  works.forEach((w, i) => {
+    const div = document.createElement('div');
+    div.className = 'card';
+
+    div.innerHTML = `
+      <img src="${w.img}" onclick="openModal(${i})">
+      <h3 contenteditable oninput="edit(${i},'title',this.innerText)">${translate(w.title)}</h3>
+      <p contenteditable oninput="edit(${i},'desc',this.innerText)">${translate(w.desc)}</p>
+      <p contenteditable oninput="edit(${i},'price',this.innerText)">${w.price}</p>
+    `;
+
+    gallery.appendChild(div);
+  });
+}
+
+function addWork() {
+  works.push({
+    title: 'Назва',
+    desc: 'Опис',
+    price: '70 €',
+    img: 'https://via.placeholder.com/400'
+  });
+  save();
+  render();
+}
+
+function edit(i, field, value) {
+  works[i][field] = value;
+  save();
+}
+
+function openModal(i) {
+  const modal = document.getElementById('modal');
+  const content = document.getElementById('modalContent');
+  content.innerHTML = `<img src="${works[i].img}">`;
+  modal.style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('modal').style.display = 'none';
+}
+
+function setLang(l) {
+  lang = l;
+  render();
+}
+
+function translate(text) {
+  if(lang === 'uk') return text;
+  return text + ' (EN)';
+}
+
+render();
+</script>
+
+</body>
+</html>
